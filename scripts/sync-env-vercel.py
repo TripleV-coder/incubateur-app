@@ -10,14 +10,18 @@ DATABASE_URL doit être une base Postgres hébergée (Neon, Supabase, etc.) :
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
+PROJECT_NAME = "incubateur-app"
 
-def _resolve_production_url(root: Path) -> str:
+
+def _resolve_production_url(root: Path) -> str | None:
+    """URL HTTPS du déploiement (sans équipe codée en dur)."""
     proj_file = root / ".vercel" / "project.json"
-    name = "incubateur-app"
+    name = PROJECT_NAME
     if proj_file.is_file():
         try:
             data = json.loads(proj_file.read_text(encoding="utf-8"))
@@ -40,7 +44,7 @@ def _resolve_production_url(root: Path) -> str:
                         return str(url)
         except json.JSONDecodeError:
             pass
-    return "https://incubateur-app-nerrys-projects.vercel.app"
+    return None
 
 
 def parse_env(path: Path) -> dict[str, str]:
@@ -68,11 +72,28 @@ def main() -> int:
         print("Fichier .env introuvable à la racine du dépôt.", file=sys.stderr)
         return 1
 
-    prod_url = _resolve_production_url(root)
-    url_keys = {"NEXTAUTH_URL", "AUTH_URL", "APP_BASE_URL"}
-    skip = {"DATABASE_URL"}
-
     env = parse_env(env_path)
+    prod_url = (
+        os.environ.get("VERCEL_PRODUCTION_URL", "").strip()
+        or env.get("VERCEL_PRODUCTION_URL", "").strip()
+        or ""
+    )
+    if not prod_url:
+        prod_url = _resolve_production_url(root) or ""
+    if not prod_url:
+        print(
+            "Impossible de déterminer l’URL de production (NEXTAUTH_URL / AUTH_URL / APP_BASE_URL).\n"
+            "  • Définis VERCEL_PRODUCTION_URL dans .env (HTTPS du projet Vercel), ou\n"
+            "  • Lance depuis un dossier avec `npx vercel link` (projet « "
+            + PROJECT_NAME
+            + " »), puis réessaie.\n",
+            file=sys.stderr,
+        )
+        return 1
+
+    url_keys = {"NEXTAUTH_URL", "AUTH_URL", "APP_BASE_URL"}
+    skip = {"DATABASE_URL", "VERCEL_PRODUCTION_URL"}
+
     for key in sorted(env.keys()):
         if key in skip:
             print(f"⊘ ignoré (à configurer à la main) : {key}")

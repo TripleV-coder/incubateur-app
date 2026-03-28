@@ -86,6 +86,19 @@ Puis ajoute **obligatoirement** `DATABASE_URL` (Postgres hébergé, ex. [Neon](h
 printf '%s' "postgresql://USER:PASSWORD@HOST/DB?sslmode=require" | npx vercel env add DATABASE_URL production --sensitive --yes
 ```
 
+### Lier le projet **incubateur-app** à ton compte Vercel
+
+Si la CLI était connectée à un autre compte / équipe, reconnecte-toi puis recrée le lien **uniquement** pour ce dépôt :
+
+```bash
+npx vercel logout
+npx vercel login
+rm -rf .vercel
+npm run vercel:link
+```
+
+Le projet s’appelle **`incubateur-app`** (voir `vercel.json`). Tu peux aussi définir `VERCEL_PRODUCTION_URL` dans `.env` pour `vercel:sync-env` si besoin.
+
 ## 7. Déploiement en une commande (token)
 
 1. Créer un token : [vercel.com/account/tokens](https://vercel.com/account/tokens) (scope « Full Account » ou équipe du projet).
