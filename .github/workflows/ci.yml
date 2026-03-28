@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, finalize-app]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: incubateur
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/incubateur?schema=public
+      AUTH_SECRET: ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-secret-32
+      NEXTAUTH_SECRET: ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-ci-secret-32
+      NEXTAUTH_URL: http://localhost:3000
+      AUTH_URL: http://localhost:3000
+      APP_BASE_URL: http://localhost:3000
+      STRIPE_SECRET_KEY: sk_test_ci_placeholder_for_build_only_012345678901234567890
+      STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder_for_build_only_012345678901234567890
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+      - run: npm run ci

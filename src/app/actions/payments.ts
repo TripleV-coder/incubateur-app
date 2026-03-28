@@ -2,7 +2,7 @@
 
 import crypto from "crypto";
 import { auth } from "@/auth";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { cinetPay } from "@/lib/cinetpay";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/activity";
@@ -31,7 +31,7 @@ export async function createStripeSession(tier: PaidTier) {
   const amount = TIER_AMOUNTS[tier];
   const appBaseUrl = await getAppBaseUrl();
 
-  const checkoutSession = await stripe.checkout.sessions.create({
+  const checkoutSession = await getStripe().checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: [
       {

@@ -19,6 +19,8 @@ Dans **Vercel → Project → Settings → Environment Variables**, ajouter tout
 
 **Important :** sans `DATABASE_URL` correcte, le build échoue à l’étape `prisma migrate deploy`.
 
+**PostgreSQL local (Docker) :** `docker compose up -d` expose la base sur le port **5433** (voir `.env.example`).
+
 ## 2. Commande de build
 
 Le projet utilise :
@@ -29,6 +31,8 @@ npm run build
 ```
 
 Ne pas désactiver `prisma migrate deploy` : elle applique les migrations sur la base Vercel.
+
+En local, validation complète : `npm run ci` (lint, schéma Prisma, migrations sur la base configurée, `next build`). Le dépôt inclut un workflow GitHub Actions équivalent.
 
 ## 3. Premier déploiement
 
