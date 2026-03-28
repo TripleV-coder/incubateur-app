@@ -45,6 +45,9 @@ prod_server.log
 # vercel
 .vercel
 
+# python (scripts)
+**/__pycache__/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
