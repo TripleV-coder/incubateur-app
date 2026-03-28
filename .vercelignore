@@ -1,0 +1,4 @@
+# Jamais envoyer les secrets locaux au build Vercel (utiliser le dashboard ou `vercel env`)
+.env
+.env.*
+!.env.example

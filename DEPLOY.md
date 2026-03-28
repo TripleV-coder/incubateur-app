@@ -70,6 +70,22 @@ npm run db:reset
 
 (`migrate reset` réapplique les migrations ; ajouter `--skip-seed` via `npm run db:empty` pour ne pas re-seeder.)
 
+## 6 bis. Variables déjà sur Vercel (sans `.env` dans le bundle)
+
+Le fichier `.vercelignore` exclut `.env` du dépôt uploadé. Les secrets se configurent sur le projet Vercel.
+
+Depuis la racine du dépôt (avec `.env` local et dossier `.vercel/` après `npx vercel link`) :
+
+```bash
+npm run vercel:sync-env
+```
+
+Puis ajoute **obligatoirement** `DATABASE_URL` (Postgres hébergé, ex. [Neon](https://neon.tech)) — requis au **build** pour `prisma migrate deploy` :
+
+```bash
+printf '%s' "postgresql://USER:PASSWORD@HOST/DB?sslmode=require" | npx vercel env add DATABASE_URL production --sensitive --yes
+```
+
 ## 7. Déploiement en une commande (token)
 
 1. Créer un token : [vercel.com/account/tokens](https://vercel.com/account/tokens) (scope « Full Account » ou équipe du projet).
