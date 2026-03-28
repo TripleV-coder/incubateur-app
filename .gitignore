@@ -30,8 +30,17 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (garder le modèle versionné)
 .env*
+!.env.example
+
+# anciennes bases SQLite locales (obsolète — PostgreSQL uniquement)
+prisma/*.db
+prisma/*.db-journal
+
+# test artifacts
+/test-results/
+prod_server.log
 
 # vercel
 .vercel

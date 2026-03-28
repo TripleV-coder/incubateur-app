@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  COACH
+  STUDENT
+}
+
+enum Tier {
+  FREE
+  INDIVIDUEL
+  COLLECTIF
+  PRIVE
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CONVERTED
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  password      String
+  name          String?
+  role          UserRole     @default(STUDENT)
+  tier          Tier         @default(FREE)
+  isActive      Boolean      @default(true)
+  /// Élève STUDENT rattaché à ce coach (compte role COACH).
+  coachId       String?
+  coach         User?        @relation("CoachStudents", fields: [coachId], references: [id])
+  students      User[]       @relation("CoachStudents")
+  enrollments   Enrollment[]
+  payments      Payment[]
+  announcements Announcement[]
+  notificationsAuthored Notification[]
+  activityLogs  ActivityLog[]
+  notificationReads NotificationRead[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Course {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  minTier     Tier         @default(FREE)
+  modules     Module[]
+  enrollments Enrollment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Module {
+  id        String   @id @default(uuid())
+  title     String
+  order     Int
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  lessons   Lesson[]
+}
+
+model Lesson {
+  id        String     @id @default(uuid())
+  title     String
+  content   String?
+  videoUrl  String?
+  resourceUrl String?
+  order     Int
+  moduleId  String
+  module    Module     @relation(fields: [moduleId], references: [id])
+  progress  Progress[]
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  progress  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+}
+
+model Progress {
+  id        String   @id @default(uuid())
+  userId    String
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  completed Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, lessonId])
+}
+
+model Payment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Decimal
+  currency  String   @default("XOF")
+  status    String   // PENDING, SUCCESS, FAILED
+  provider  String   // STRIPE, CINETPAY
+  reference String?  @unique
+  createdAt DateTime @default(now())
+}
+
+model Announcement {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  isPublished Boolean  @default(true)
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  target    String?
+  metadata  String?
+  createdAt DateTime @default(now())
+}
+
+model Lead {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  name      String?
+  source    String?
+  status    LeadStatus @default(NEW)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Notification {
+  id          String             @id @default(uuid())
+  title       String
+  content     String
+  targetTier  Tier?
+  isPublished Boolean            @default(true)
+  createdById String?
+  createdBy   User?              @relation(fields: [createdById], references: [id])
+  reads       NotificationRead[]
+  createdAt   DateTime           @default(now())
+}
+
+model NotificationRead {
+  id             String       @id @default(uuid())
+  userId         String
+  notificationId String
+  user           User         @relation(fields: [userId], references: [id])
+  notification   Notification @relation(fields: [notificationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@unique([userId, notificationId])
+}

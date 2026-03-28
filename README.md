@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Incubateur Élite 4.0
 
-## Getting Started
+Application Next.js (App Router) : LMS, paiements (Stripe / CinetPay, XOF), rôles STUDENT / COACH / ADMIN.
 
-First, run the development server:
+## Prérequis
+
+- Node.js 20+
+- **PostgreSQL** (base unique — plus de SQLite). En local : `docker compose up -d` puis une URL du type  
+  `postgresql://postgres:postgres@localhost:5432/incubateur`
+
+## Configuration
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env
+# Renseigner DATABASE_URL, AUTH_SECRET, NEXTAUTH_URL, etc.
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Base de données
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npx prisma migrate dev    # développement
+npm run db:seed           # données de démo (comptes : voir sortie du seed, ex. password123)
+npm run db:reset          # tout réinitialiser + seed
+npm run db:empty          # reset sans seed (base vide après migrations)
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Développement
 
-## Learn More
+```bash
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Déploiement Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Voir **[DEPLOY.md](./DEPLOY.md)** (variables d’environnement, migrations, seed post-déploiement).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Le build exécute `prisma migrate deploy` puis `next build` : la variable **`DATABASE_URL`** doit être définie sur Vercel avant le premier build.

@@ -1,0 +1,15 @@
+# PostgreSQL local pour le développement (docker compose up -d)
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: incubateur
+    ports:
+      - "5432:5432"
+    volumes:
+      - incubateur_pg:/var/lib/postgresql/data
+
+volumes:
+  incubateur_pg:
